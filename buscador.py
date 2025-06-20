@@ -1,5 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
+import json
+import os
+from datetime import datetime
 
 class FundoImobiliario:
     def __init__(self, codigo, dy_12m, dy_percent, preco_atual, segmento, tipo, val_patr, vacancia, qtdcotis, qtdcotas, cnpj, preco_teto, pvp, liquidez):
@@ -10,25 +13,53 @@ class FundoImobiliario:
         self.segmento = segmento
         self.tipo = tipo
         self.val_patr = val_patr
-        self.vacan = vacancia
+        self.vacancia = vacancia
         self.qtdcotis = qtdcotis
         self.qtdcotas = qtdcotas
         self.cnpj = cnpj
         self.pvp = pvp
         self.liquidez = liquidez
-
         self.preco_teto = preco_teto
 
-# # Exemplo:
-# fii = FundoImobiliario("XPML11", 11.04, 100.50, 92.00)
-# fiis[fii.codigo] = fii
+    def to_dict(self):
+        return self.__dict__
 
+    @staticmethod
+    def from_dict(dados):
+        return FundoImobiliario(**dados)
 
-# Função busca codigos de Fundos Imobiliários.
+class Data:
+    def __init__(self, siglas=None, fundos=None, ultima_atualizacao=None):
+        self.siglas = siglas if siglas else []
+        self.fundos = fundos if fundos else {}  # dicionário com os dados dos fundos (em formato dict)
+        self.ultima_atualizacao = ultima_atualizacao
+
+    def salvar(self, arquivo="data.json"):
+        dados = {
+            "siglas": self.siglas,
+            "fundos": self.fundos,
+            "ultima_atualizacao": self.ultima_atualizacao
+        }
+        with open(arquivo, "w", encoding="utf-8") as f:
+            json.dump(dados, f, ensure_ascii=False, indent=4)
+
+    @staticmethod
+    def carregar(arquivo="data.json"):
+        if os.path.exists(arquivo):
+            with open(arquivo, "r", encoding="utf-8") as f:
+                dados = json.load(f)
+                return Data(
+                    siglas=dados.get("siglas", []),
+                    fundos=dados.get("fundos", {}),
+                    ultima_atualizacao=dados.get("ultima_atualizacao")
+                )
+        else:
+            return Data()
+
 def obter_fiis():
-    letras = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
+    letras = [chr(i) for i in range(ord('A'), ord('Z')+1)]
     siglas = []
-    
+
     url_fiis = "https://www.fundsexplorer.com.br/funds"
     headers = {'User-Agent': 'Mozilla/5.0'}
 
@@ -37,50 +68,30 @@ def obter_fiis():
         print(f"Erro ao acessar o site.")
 
     html_fiis = BeautifulSoup(resposta.text, 'html.parser')
+    listar = html_fiis.find('div', class_='tickerFilter__results')
 
-    # Pega a lista geral de fiis dentro do HTML
-    listar = html_fiis.find('div',class_='tickerFilter__results')
-
-    # Pega as listas de cada letra
     for letra in letras:
-        filtrar = listar.find('section',id=f"letter-id-{letra}")
+        filtrar = listar.find('section', id=f"letter-id-{letra}")
         buscar = filtrar.find_all('div', attrs={'data-element': 'ticker-box-title'})
         for item in buscar:
             siglas.append(item.text.strip())
-    
+
+    print(f"\nBusca de {len(siglas)} siglas completa.\n")
     return siglas
 
 def obter_infos(fii):
     url = f'https://investidor10.com.br/fiis/{fii.lower()}/'
     headers = {'User-Agent': 'Mozilla/5.0'}
 
-    # @Sigla / Segmento / Tipo(Tijolo/Papel) / @Preço da Cota / @DY Médio 12Meses % / @DY 12Meses em real / @Liquidez Diária / @P/VP / Valor Patrimônial / QTD Cotistas / Vacância /
-
-    preco_cota = None
-    dy12 = None
-    pvp = None
-    liquidez = None
-    segmento = None
-    tipo = None
-    val_patri = None
-    qtd_cotas = None
-    qtd_cotis = None
-    vacancia = None
-    cnpj = None
-
-
-
     resposta = requests.get(url, headers=headers)
     if resposta.status_code != 200:
         print(f"Erro ao acessar o site para {fii}")
-        return None, None
+        return None
 
     soup = BeautifulSoup(resposta.text, 'html.parser')
 
-    # --- DY 12M ---
     spans_dy = soup.find_all('span', class_='content--info--item--value amount')
     valores_rs = []
-
     for span in spans_dy:
         texto = span.text.strip()
         if 'R$' in texto:
@@ -89,107 +100,104 @@ def obter_infos(fii):
                 valores_rs.append(float(valor))
             except ValueError:
                 continue
-
     val_dy_12m = valores_rs[3] if len(valores_rs) >= 4 else None
 
-    # --- Cota atual ---
-    span_valores = soup.find_all('span', class_='value')
-    for span in span_valores:
+    preco_cota = None
+    for span in soup.find_all('span', class_='value'):
         texto = span.text.strip()
         if 'R$' in texto:
             valor = texto.replace('R$', '').replace(',', '.').strip()
             try:
                 preco_cota = float(valor)
-                break  # pegamos o primeiro valor R$ da cota
+                break
             except ValueError:
                 continue
 
-#   Buscando o Dividend Yeld 12 Meses em Porcentagem.
-    card = soup.find('div', class_='_card dy')  # passo 1: acha o card
-    if card:
-        corpo = card.find('div', class_='_card-body')  # passo 2: entra no "_card-body"
-        if corpo:
-            span = corpo.find('span')  # passo 3: pega o primeiro span dentro do _card-body
-            if span:
-                dy12 = span.text.strip()
-            else:
-                print("Span não encontrado.")
-        else:
-            print("Div _card-body não encontrada.")
-    else:
-        print("Card _card dy não encontrado.")
+    def get_card_value(classe):
+        card = soup.find('div', class_=f'_card {classe}')
+        if card:
+            corpo = card.find('div', class_='_card-body')
+            if corpo:
+                span = corpo.find('span')
+                if span:
+                    return span.text.strip()
+        return None
 
-    #Buscando P/VP
-    card = soup.find('div', class_='_card vp')  # passo 1: acha o card
-    if card:
-        corpo = card.find('div', class_='_card-body')  # passo 2: entra no "_card-body"
-        if corpo:
-            span = corpo.find('span')  # passo 3: pega o primeiro span dentro do _card-body
-            if span:
-                pvp = span.text.strip()
-            else:
-                print("Span não encontrado.")
-        else:
-            print("Div _card-body não encontrada.")
-    else:
-        print("Card _card vp não encontrado.")
+    dy12 = get_card_value("dy")
+    pvp = get_card_value("vp")
+    liquidez = get_card_value("val")
 
-    #Buscando Liquidez Diária
-    card = soup.find('div', class_='_card val')  # passo 1: acha o card
-    if card:
-        corpo = card.find('div', class_='_card-body')  # passo 2: entra no "_card-body"
-        if corpo:
-            span = corpo.find('span')  # passo 3: pega o primeiro span dentro do _card-body
-            if span:
-                liquidez = span.text.strip()
-            else:
-                print("Span não encontrado.")
-        else:
-            print("Div _card-body não encontrada.")
-    else:
-        print("Card _card val não encontrado.")
-
-    #Varias Infos
     valores = {}
     tabela = soup.find('div', id="table-indicators")
     if tabela:
         celulas = tabela.find_all('div', class_="cell")
         for cell in celulas:
-            nome = cell.find('span',class_="d-flex justify-content-between align-items-center name")
+            nome = cell.find('span', class_="d-flex justify-content-between align-items-center name")
             value = cell.find('div', class_="value")
-            if value:
-                valores[(nome.text.strip())] = (value.text.strip())
-    else:
-        print(f"Tabela de indicadores não encontrada para {fii}")
-    
+            if nome and value:
+                valores[nome.text.strip()] = value.text.strip()
 
-    cnpj       = valores.get("CNPJ", None)
-    segmento   = valores.get("SEGMENTO", None)
-    tipo       = valores.get("TIPO DE FUNDO", None)
-    vacancia   = valores.get("VACÂNCIA", None)
-    qtd_cotis  = valores.get("NUMERO DE COTISTAS", None)
-    qtd_cotas  = valores.get("COTAS EMITIDAS", None)
-    val_patri  = valores.get("VALOR PATRIMONIAL", None)
+    cnpj       = valores.get("CNPJ")
+    segmento   = valores.get("SEGMENTO")
+    tipo       = valores.get("TIPO DE FUNDO")
+    vacancia   = valores.get("VACÂNCIA")
+    qtd_cotis  = valores.get("NUMERO DE COTISTAS")
+    qtd_cotas  = valores.get("COTAS EMITIDAS")
+    val_patri  = valores.get("VALOR PATRIMONIAL")
 
+    preco_teto = round(val_dy_12m / 0.12, 2) if val_dy_12m else None
 
-
-    
-    rentabilidade_desejada = 12/100 #Rentabilidade de 12%a.a.
-    if val_dy_12m == None:
-        preco_teto = None
-    else:
-        preco_teto = round(val_dy_12m / rentabilidade_desejada, 2)
-
-    fundo = FundoImobiliario(fii,val_dy_12m,dy12,preco_cota,segmento,tipo,val_patri,vacancia,qtd_cotis,qtd_cotas,cnpj,preco_teto,pvp,liquidez)
-
-    return fundo
+    return FundoImobiliario(
+        fii, val_dy_12m, dy12, preco_cota, segmento, tipo,
+        val_patri, vacancia, qtd_cotis, qtd_cotas, cnpj,
+        preco_teto, pvp, liquidez
+    )
 
 # --- Programa Principal ---
-lista_fundos = {}
-siglas = obter_fiis()
-for sigla in siglas:
-        print(sigla)
-        lista_fundos[sigla] = obter_infos(sigla)
-while True:   
-    opcao = str(input("Qual fundo você deseja verificar o preço atual, e o DY?")).upper()
-    print(f"\nPreço da cota: R${lista_fundos[opcao].preco_atual}\nSegmento: {lista_fundos[opcao].segmento}\nDY 12 Meses: R${lista_fundos[opcao].dy_12m}\nPreço Teto: R${lista_fundos[opcao].preco_teto}")
+data = Data.carregar()
+siglas = data.siglas
+lista_fundos = {
+    codigo: FundoImobiliario.from_dict(info)
+    for codigo, info in data.fundos.items()
+}
+
+if data.ultima_atualizacao:
+    print(f"Última atualização: {data.ultima_atualizacao}")
+else:
+    print("Nenhuma atualização anterior encontrada.")
+
+sair = 0
+while sair != 1:
+    opcao = str(input("\n##- MENU -##\n1 - Buscar siglas\n2 - Atualizar Informações\n3 - Acessar informações de um fundo\n0 - Sair\n\nO que você deseja fazer?: "))
+    if opcao == "0":
+        data.siglas = siglas
+        data.fundos = {k: v.to_dict() for k, v in lista_fundos.items()}
+        data.ultima_atualizacao = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+        data.salvar()
+        print(f"\nDados salvos em data.json.")
+        sair = 1
+
+    elif opcao == "1":
+        siglas = obter_fiis()
+
+    elif opcao == "2":
+        for sigla in siglas:
+            print(f"\nAtualizando {sigla}...")
+            fundo = obter_infos(sigla)
+            if fundo:
+                lista_fundos[sigla] = fundo
+        print("\nAtualização Completa.")
+
+    elif opcao == "3":
+        busca = str(input("Qual fundo você deseja verificar?: ")).upper()
+        if busca in lista_fundos:
+            fundo = lista_fundos[busca]
+            print(f"\nPreço da cota: R${fundo.preco_atual}")
+            print(f"Segmento: {fundo.segmento}")
+            print(f"DY 12 Meses: R${fundo.dy_12m}")
+            print(f"Preço Teto: R${fundo.preco_teto}")
+        else:
+            print("Fundo não encontrado.")
+
+    else:
+        print("\nDigite uma opção válida!")
