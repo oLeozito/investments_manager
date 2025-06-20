@@ -150,35 +150,35 @@ def obter_infos(fii):
         print("Card _card val não encontrado.")
 
     #Varias Infos
-    valores = []
+    valores = {}
     tabela = soup.find('div', id="table-indicators")
     if tabela:
         celulas = tabela.find_all('div', class_="cell")
         for cell in celulas:
+            nome = cell.find('span',class_="d-flex justify-content-between align-items-center name")
             value = cell.find('div', class_="value")
             if value:
-                valores.append(value.text.strip())
+                valores[(nome.text.strip())] = (value.text.strip())
     else:
         print(f"Tabela de indicadores não encontrada para {fii}")
+    
+
+    cnpj       = valores.get("CNPJ", None)
+    segmento   = valores.get("SEGMENTO", None)
+    tipo       = valores.get("TIPO DE FUNDO", None)
+    vacancia   = valores.get("VACÂNCIA", None)
+    qtd_cotis  = valores.get("NUMERO DE COTISTAS", None)
+    qtd_cotas  = valores.get("COTAS EMITIDAS", None)
+    val_patri  = valores.get("VALOR PATRIMONIAL", None)
 
 
-    def seguro(valores, i):
-        return valores[i] if i < len(valores) else None
-
-    cnpj       = seguro(valores, 1)
-    segmento   = seguro(valores, 4)
-    tipo       = seguro(valores, 5)
-    vacancia   = seguro(valores, 9)
-    qtd_cotis  = seguro(valores, 10)
-    qtd_cotas  = seguro(valores, 11)
-    val_patri  = seguro(valores, 13)
 
     
     rentabilidade_desejada = 12/100 #Rentabilidade de 12%a.a.
     if val_dy_12m == None:
         preco_teto = None
     else:
-        preco_teto = val_dy_12m/rentabilidade_desejada
+        preco_teto = round(val_dy_12m / rentabilidade_desejada, 2)
 
     fundo = FundoImobiliario(fii,val_dy_12m,dy12,preco_cota,segmento,tipo,val_patri,vacancia,qtd_cotis,qtd_cotas,cnpj,preco_teto,pvp,liquidez)
 
@@ -192,4 +192,4 @@ for sigla in siglas:
         lista_fundos[sigla] = obter_infos(sigla)
 while True:   
     opcao = str(input("Qual fundo você deseja verificar o preço atual, e o DY?")).upper()
-    print(f"Preço da cota: {lista_fundos[opcao].preco_atual}\nSegmento: {lista_fundos[opcao].segmento}\nDY 12 Meses: {lista_fundos[opcao].dy_12m}")
+    print(f"\nPreço da cota: R${lista_fundos[opcao].preco_atual}\nSegmento: {lista_fundos[opcao].segmento}\nDY 12 Meses: R${lista_fundos[opcao].dy_12m}\nPreço Teto: R${lista_fundos[opcao].preco_teto}")
