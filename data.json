@@ -1905,7 +1905,7 @@
         },
         "BTRA11": {
             "codigo": "BTRA11",
-            "dy_12m": 3.9,
+            "dy_12m": 3.6,
             "dy_percent": 7.1,
             "preco_atual": 54.99,
             "segmento": "Fiagros",
@@ -1917,7 +1917,7 @@
             "cnpj": "41.076.607/0001-32",
             "pvp": 0.49,
             "liquidez": 155870.0,
-            "preco_teto": 32.5
+            "preco_teto": 30.0
         },
         "BTSG11": {
             "codigo": "BTSG11",
@@ -1937,7 +1937,7 @@
         },
         "BTSI11": {
             "codigo": "BTSI11",
-            "dy_12m": 3.73,
+            "dy_12m": 2.99,
             "dy_percent": 3.37,
             "preco_atual": 110.58,
             "segmento": "Híbrido",
@@ -1949,7 +1949,7 @@
             "cnpj": "36.930.464/0001-44",
             "pvp": 0.94,
             "liquidez": 2720.0,
-            "preco_teto": 31.08
+            "preco_teto": 24.92
         },
         "BTWR11": {
             "codigo": "BTWR11",
@@ -2737,7 +2737,7 @@
         },
         "EDGA11": {
             "codigo": "EDGA11",
-            "dy_12m": 0.93,
+            "dy_12m": 0.83,
             "dy_percent": 5.53,
             "preco_atual": 16.81,
             "segmento": "Lajes Corporativas",
@@ -2749,7 +2749,7 @@
             "cnpj": "15.333.306/0001-37",
             "pvp": 0.36,
             "liquidez": 7210.0,
-            "preco_teto": 7.75
+            "preco_teto": 6.92
         },
         "EGDB11": {
             "codigo": "EGDB11",
@@ -3649,7 +3649,7 @@
         },
         "GZIT11": {
             "codigo": "GZIT11",
-            "dy_12m": 3.9,
+            "dy_12m": 3.12,
             "dy_percent": 8.21,
             "preco_atual": 47.41,
             "segmento": "Híbrido",
@@ -3661,7 +3661,7 @@
             "cnpj": "15.447.108/0001-02",
             "pvp": 0.52,
             "liquidez": 468610.0,
-            "preco_teto": 32.5
+            "preco_teto": 26.0
         },
         "HAAA11": {
             "codigo": "HAAA11",
@@ -7715,7 +7715,7 @@
             "codigo": "SALI11",
             "dy_12m": null,
             "dy_percent": 0.0,
-            "preco_atual": 0.96,
+            "preco_atual": 0.0,
             "segmento": "Outros",
             "tipo": "Fundo misto",
             "val_patr": 8010000.0,
@@ -9520,5 +9520,5 @@
             "preco_teto": null
         }
     },
-    "ultima_atualizacao": "20/06/2025 22:36:05"
+    "ultima_atualizacao": "21/06/2025 15:27:10"
 }

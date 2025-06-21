@@ -220,7 +220,7 @@ fundos_filtrados = {}
 
 sair = 0
 while sair != 1:
-    opcao = str(input("\n####- MENU -####\n1 - Buscar siglas\n2 - Atualizar Informações\n3 - Filtrar e atualizar tabela.\n4 - Acessar informações de um fundo\n0 - Sair\n\nO que você deseja fazer?: "))
+    opcao = str(input("\n####- MENU -####\n1 - Buscar siglas\n2 - Atualizar Informações\n3 - Filtrar e atualizar tabela.\n4 - Acessar informações de um fundo\n5 - Atualizar apenas fundos filtrados.\n0 - Sair\n\nO que você deseja fazer?: "))
     if opcao == "0":
         data.siglas = siglas
         data.fundos = {k: v.to_dict() for k, v in lista_fundos.items()}
@@ -272,6 +272,14 @@ while sair != 1:
             print(f"Preço Teto 12% de rentabilidade: R${fundo.preco_teto:.2f}")
         else:
             print("Fundo não encontrado.")
+
+    elif opcao == "5":
+        print("\nAtualizando...")
+        for codigo in fundos_filtrados.keys():
+            fundo = obter_infos(codigo)
+            if fundo:
+                lista_fundos[codigo] = fundo
+        print("\nAtualização de fundos filtrados completa.")
 
     else:
         print("\nDigite uma opção válida!")
