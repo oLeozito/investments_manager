@@ -4,6 +4,9 @@ import json
 import os
 from datetime import datetime
 
+# Import pra manipular excel
+import openpyxl
+
 class FundoImobiliario:
     def __init__(self, codigo, dy_12m, dy_percent, preco_atual, segmento, tipo, val_patr, vacancia, qtdcotis, qtdcotas, cnpj, preco_teto, pvp, liquidez):
         self.codigo = codigo
@@ -213,6 +216,8 @@ if data.ultima_atualizacao:
 else:
     print("Nenhuma atualização anterior encontrada.")
 
+fundos_filtrados = {}
+
 sair = 0
 while sair != 1:
     opcao = str(input("\n####- MENU -####\n1 - Buscar siglas\n2 - Atualizar Informações\n3 - Filtrar e atualizar tabela.\n4 - Acessar informações de um fundo\n0 - Sair\n\nO que você deseja fazer?: "))
@@ -236,7 +241,16 @@ while sair != 1:
         print("\nAtualização Completa.")
 
     elif opcao == "3":
-        print("Filtrar e atualizar tabela.")
+        for fundo in lista_fundos.values():
+            if (
+                fundo.liquidez is not None and fundo.liquidez > 500_000.0 and
+                fundo.pvp is not None and 0.7 <= fundo.pvp <= 1.06 and
+                fundo.dy_percent is not None and 9.0 <= fundo.dy_percent <= 20.0 and
+                fundo.val_patr is not None and fundo.val_patr >= 300_000_000
+            ):
+                fundos_filtrados[fundo.codigo] = fundo
+
+        print(f"{len(fundos_filtrados)} - Fundos Filtrados")
 
     elif opcao == "4":
         busca = str(input("Qual fundo você deseja verificar?: ")).upper()
