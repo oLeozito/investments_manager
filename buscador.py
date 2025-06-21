@@ -226,22 +226,22 @@ def preencher_tabela(fundos,pagina):
                     cell.value = fundos[chaves[count]].preco_atual
                     flag+=1
                 elif flag == 4:
-                    cell.value = fundos[chaves[count]].liquidez
+                    cell.value = fundos[chaves[count]].preco_teto
                     flag+=1
                 elif flag == 5:
                     cell.value = fundos[chaves[count]].pvp
                     flag+=1
                 elif flag == 6:
-                    cell.value = fundos[chaves[count]].dy_percent
+                    cell.value = (fundos[chaves[count]].dy_percent/100)
                     flag+=1
                 elif flag == 7:
-                    cell.value = fundos[chaves[count]].vacancia
-                    flag+=1
-                elif flag == 8:
                     cell.value = fundos[chaves[count]].val_patr
                     flag+=1
+                elif flag == 8:
+                    cell.value = fundos[chaves[count]].liquidez
+                    flag+=1
                 elif flag == 9:
-                    cell.value = fundos[chaves[count]].preco_teto
+                    cell.value = (fundos[chaves[count]].vacancia/100)
                     flag+=1
                 elif flag == 10:
                     cell.value = fundos[chaves[count]].qtdcotis
