@@ -6,6 +6,8 @@ from datetime import datetime
 
 # Import pra manipular excel
 import openpyxl
+from openpyxl.styles import Alignment, Font
+
 
 class FundoImobiliario:
     def __init__(self, codigo, dy_12m, dy_percent, preco_atual, segmento, tipo, val_patr, vacancia, qtdcotis, qtdcotas, cnpj, preco_teto, pvp, liquidez):
@@ -215,6 +217,10 @@ def preencher_tabela(fundos,pagina):
         for cell in row:
                 if flag == 0:
                     cell.value = fundos[chaves[count]].codigo
+                    cell.hyperlink = f"https://investidor10.com.br/fiis/{(fundos[chaves[count]].codigo).lower()}/"
+                    cell.style = "Hyperlink"
+                    cell.alignment = Alignment(horizontal='center')
+                    cell.font = Font(bold=True)
                     flag+=1
                 elif flag == 1:
                     cell.value = fundos[chaves[count]].segmento
