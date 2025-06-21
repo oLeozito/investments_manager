@@ -168,7 +168,7 @@ else:
 
 sair = 0
 while sair != 1:
-    opcao = str(input("\n##- MENU -##\n1 - Buscar siglas\n2 - Atualizar Informações\n3 - Acessar informações de um fundo\n0 - Sair\n\nO que você deseja fazer?: "))
+    opcao = str(input("\n####- MENU -####\n1 - Buscar siglas\n2 - Atualizar Informações\n3 - Acessar informações de um fundo\n0 - Sair\n\nO que você deseja fazer?: "))
     if opcao == "0":
         data.siglas = siglas
         data.fundos = {k: v.to_dict() for k, v in lista_fundos.items()}
