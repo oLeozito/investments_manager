@@ -14,10 +14,10 @@ class Fundo:
         self.dymedia = 0.0
         self.patrliquid = 0.0
 
-plano = openpyxl.load_workbook("Filtro Fii.xlsx")
+plano = openpyxl.load_workbook("Filtrados.xlsx")
 pagina = plano['Fundos']
 
-for rows in pagina.iter_rows(min_row = 3, max_row = 79,max_col=8):
+for rows in pagina.iter_rows(min_row = 3, max_row = 100,max_col=12):
     fundo = Fundo()
     flag = 1
     for cell in rows:

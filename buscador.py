@@ -201,6 +201,53 @@ def obter_infos(fii):
         preco_teto, pvp, liquidez
     )
 
+def limpar_tabela(pagina):
+    for row in pagina.iter_rows(min_row = 3, max_row = 100, min_col=1, max_col=12):
+        for cell in row:
+            cell.value = None
+    print("\nTabela Limpa")
+
+def preencher_tabela(fundos,pagina):
+    count = 0
+    chaves = list(fundos.keys())
+    for row in pagina.iter_rows(min_row =3, max_row =len(fundos.keys()),min_col=1,max_col=11):
+        flag = 0
+        for cell in row:
+                if flag == 0:
+                    cell.value = fundos[chaves[count]].codigo
+                    flag+=1
+                elif flag == 1:
+                    cell.value = fundos[chaves[count]].segmento
+                    flag+=1
+                elif flag == 2:
+                    cell.value = fundos[chaves[count]].tipo
+                    flag+=1
+                elif flag == 3:
+                    cell.value = fundos[chaves[count]].preco_atual
+                    flag+=1
+                elif flag == 4:
+                    cell.value = fundos[chaves[count]].liquidez
+                    flag+=1
+                elif flag == 5:
+                    cell.value = fundos[chaves[count]].pvp
+                    flag+=1
+                elif flag == 6:
+                    cell.value = fundos[chaves[count]].dy_percent
+                    flag+=1
+                elif flag == 7:
+                    cell.value = fundos[chaves[count]].vacancia
+                    flag+=1
+                elif flag == 8:
+                    cell.value = fundos[chaves[count]].val_patr
+                    flag+=1
+                elif flag == 9:
+                    cell.value = fundos[chaves[count]].preco_teto
+                    flag+=1
+                elif flag == 10:
+                    cell.value = fundos[chaves[count]].qtdcotis
+                    flag+=1
+        count+=1
+
 # Programa Principal
 
 # Carregando json
@@ -241,6 +288,9 @@ while sair != 1:
         print("\nAtualização Completa.")
 
     elif opcao == "3":
+        plano = openpyxl.load_workbook("Filtrados.xlsx")
+        pagina = plano['Fundos']
+        limpar_tabela(pagina)
         for fundo in lista_fundos.values():
             if (
                 fundo.liquidez is not None and fundo.liquidez > 500_000.0 and
@@ -250,7 +300,9 @@ while sair != 1:
             ):
                 fundos_filtrados[fundo.codigo] = fundo
 
-        print(f"{len(fundos_filtrados)} - Fundos Filtrados")
+        preencher_tabela(fundos_filtrados,pagina)
+        plano.save("Filtrados.xlsx")
+        print(f"\n{len(fundos_filtrados)} - Fundos Filtrados")
 
     elif opcao == "4":
         busca = str(input("Qual fundo você deseja verificar?: ")).upper()
